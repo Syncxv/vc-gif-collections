@@ -53,10 +53,24 @@ export function getGifByMessageAndUrl(url: string, message: Message): Gif | null
     if (!message.embeds.length && !message.attachments.length || isAudio(url))
         return null;
 
-    url = cleanUrl(url);
+    const cleanedUrl = cleanUrl(url);
 
     // find embed with matching url or image/thumbnail url
-    const embed = message.embeds.find(e => e.url === url || e.image?.url === url || e.image?.proxyURL === url || e.video?.proxyURL === url || e.thumbnail?.proxyURL === url); // no point in checking thumbnail/video url because no way of getting it eh. discord renders the img/video element with proxy urls
+    const embed = message.embeds.find((e) => {
+        const hasMatchingUrl = e.url && cleanUrl(e.url) === cleanedUrl;
+        const hasMatchingImage = e.image && cleanUrl(e.image.url) === cleanedUrl;
+        const hasMatchingImageProxy = e.image?.proxyURL === cleanedUrl;
+        const hasMatchingVideoProxy = e.video?.proxyURL === cleanedUrl;
+        const hasMatchingThumbnailProxy = e.thumbnail?.proxyURL === cleanedUrl;
+
+        return (
+            hasMatchingUrl ||
+            hasMatchingImage ||
+            hasMatchingImageProxy ||
+            hasMatchingVideoProxy ||
+            hasMatchingThumbnailProxy
+        );
+    });
     if (embed) {
         if (embed.image)
             return {
@@ -86,7 +100,7 @@ export function getGifByMessageAndUrl(url: string, message: Message): Gif | null
     }
 
 
-    const attachment = message.attachments.find(a => a.url === url || a.proxy_url === url);
+    const attachment = message.attachments.find(a => cleanUrl(a.url) === cleanedUrl || a.proxy_url === cleanedUrl);
     if (attachment) return {
         id: uuidv4(),
         height: attachment.height ?? 50,
