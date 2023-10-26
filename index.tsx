@@ -99,23 +99,31 @@ export default definePlugin({
             replacement: [
                 // This patch adds the collections to the gif part yk
                 {
-                    match: /(\i\.render=function\(\){)(.{1,50}getItemGrid)/,
+                    match: /(render\(\){)(.{1,50}getItemGrid)/,
                     replace: "$1;$self.insertCollections(this);$2"
                 },
                 // Hides the gc: from the name gc:monkeh -> monkeh
+                // https://regex101.com/r/uEjLFq/1
                 {
-                    match: /(\i\.renderCategoryExtras=function\((?<props>\i)\){)var (?<varName>\i)=\i\.name,/,
-                    replace: "$1var $<varName>=$self.hidePrefix($<props>),"
+                    match: /(className:\w\.categoryName,children:)(\i)/,
+                    replace: "$1$self.hidePrefix($2),"
                 },
+            ]
+        },
+        {
+            find: "renderEmptyFavorite",
+            replacement: {
+                match: /render\(\){.{1,500}onClick:this\.handleClick,/,
+                replace: "$&onContextMenu: (e) => $self.collectionContextMenu(e, this),"
+            }
+        },
+        {
+            find: "renderHeaderContent()",
+            replacement: [
                 // Replaces this.props.resultItems with the collection.gifs
                 {
-                    match: /(\i\.renderContent=function\(\){)(.{1,50}resultItems)/,
-                    replace: "$1;$self.renderContent(this);$2"
-                },
-                // Delete context menu for collection
-                {
-                    match: /(\i\.render=function\(\){.{1,100}renderExtras.{1,200}onClick:this\.handleClick,)/,
-                    replace: "$1onContextMenu: (e) => $self.collectionContextMenu(e, this),"
+                    match: /(renderContent\(\){)(.{1,50}resultItems)/,
+                    replace: "$1$self.renderContent(this);$2"
                 },
             ]
         },
@@ -129,9 +137,9 @@ export default definePlugin({
         {
             find: "type:\"GIF_PICKER_QUERY\"",
             replacement: {
-                match: /(function \i\((?<query>\i),\i\){.{1,200}dispatch\({type:"GIF_PICKER_QUERY".{1,20};)/,
+                match: /(function \i\(.{1,10}\){)(.{1,100}.GIFS_SEARCH,query:)/,
                 replace:
-                    "$&if($self.shouldStopFetch($<query>)) return;"
+                    "$1if($self.shouldStopFetch(arguments[0])) return;$2"
             }
         },
     ],
@@ -176,8 +184,8 @@ export default definePlugin({
 
     },
 
-    hidePrefix(props: Category) {
-        return props.name.split(":").length > 1 ? props.name.replace(/.+?:/, "") : props.name;
+    hidePrefix(name: string) {
+        return name.split(":").length > 1 ? name.replace(/.+?:/, "") : name;
     },
 
     insertCollections(instance: { props: Props; }) {
@@ -212,13 +220,18 @@ export default definePlugin({
                     onConfirm={() => { this.sillyInstance && this.sillyInstance.forceUpdate(); }}
                     nameOrId={instance.props.item.name} />
             );
-        if (item?.id?.startsWith(GIF_ITEM_PREFIX))
-            return ContextMenu.open(e, () =>
+        if (item?.id?.startsWith(GIF_ITEM_PREFIX)) {
+            ContextMenu.open(e, () =>
                 <RemoveItemContextMenu
                     type="gif"
                     onConfirm={() => { this.sillyContentInstance && this.sillyContentInstance.forceUpdate(); }}
                     nameOrId={instance.props.item.id}
                 />);
+            instance.props.focused = false;
+            instance.forceUpdate();
+            this.sillyContentInstance && this.sillyContentInstance.forceUpdate();
+            return;
+        }
 
         const { src, url, height, width } = item;
         if (src && url && height != null && width != null && !item.id?.startsWith(GIF_ITEM_PREFIX))

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
 export enum Format { NONE = 0, IMAGE = 1, VIDEO = 2 }
 
 export interface Category {

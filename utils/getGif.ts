@@ -16,8 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-
-
 import { MessageStore, SnowflakeUtils } from "@webpack/common";
 import { Message } from "discord-types/general";
 
@@ -56,7 +54,7 @@ export function getGifByMessageAndUrl(url: string, message: Message): Gif | null
     const cleanedUrl = cleanUrl(url);
 
     // find embed with matching url or image/thumbnail url
-    const embed = message.embeds.find((e) => {
+    const embed = message.embeds.find(e => {
         const hasMatchingUrl = e.url && cleanUrl(e.url) === cleanedUrl;
         const hasMatchingImage = e.image && cleanUrl(e.image.url) === cleanedUrl;
         const hasMatchingImageProxy = e.image?.proxyURL === cleanedUrl;
