@@ -23,7 +23,7 @@ import { definePluginSettings } from "@api/Settings";
 import { Devs } from "@utils/constants";
 import { ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
-import { Alerts, Button, ContextMenu, FluxDispatcher, Forms, Menu, React, TextInput, useCallback, useState } from "@webpack/common";
+import { Alerts, Button, ContextMenuApi, FluxDispatcher, Forms, Menu, React, TextInput, useCallback, useState } from "@webpack/common";
 
 import * as CollectionManager from "./CollectionManager";
 import { GIF_COLLECTION_PREFIX, GIF_ITEM_PREFIX } from "./constants";
@@ -214,14 +214,14 @@ export default definePlugin({
     collectionContextMenu(e: React.UIEvent, instance) {
         const { item } = instance.props;
         if (item?.name?.startsWith(GIF_COLLECTION_PREFIX))
-            return ContextMenu.open(e, () =>
+            return ContextMenuApi.openContextMenu(e, () =>
                 <RemoveItemContextMenu
                     type="collection"
                     onConfirm={() => { this.sillyInstance && this.sillyInstance.forceUpdate(); }}
                     nameOrId={instance.props.item.name} />
             );
         if (item?.id?.startsWith(GIF_ITEM_PREFIX)) {
-            ContextMenu.open(e, () =>
+            ContextMenuApi.openContextMenu(e, () =>
                 <RemoveItemContextMenu
                     type="gif"
                     onConfirm={() => { this.sillyContentInstance && this.sillyContentInstance.forceUpdate(); }}
@@ -235,7 +235,7 @@ export default definePlugin({
 
         const { src, url, height, width } = item;
         if (src && url && height != null && width != null && !item.id?.startsWith(GIF_ITEM_PREFIX))
-            return ContextMenu.open(e, () =>
+            return ContextMenuApi.openContextMenu(e, () =>
                 <Menu.Menu
                     navId="gif-collection-id"
                     onClose={() => FluxDispatcher.dispatch({ type: "CONTEXT_MENU_CLOSE" })}
