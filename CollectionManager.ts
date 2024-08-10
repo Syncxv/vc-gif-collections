@@ -22,11 +22,13 @@ import { Toasts } from "@webpack/common";
 import { settings } from "./index";
 import { Collection, Gif } from "./types";
 import { getFormat } from "./utils/getFormat";
+import { GetUpdatedGifCdnUrl } from "./utils/getUpdatedGifCdnUrl";
 
 export const DATA_COLLECTION_NAME = "gif-collections-collections";
 
 // this is here bec async + react class component dont play nice and stutters happen. IF theres a better way of doing it pls let me know
 export let cache_collections: Collection[] = [];
+let favorites: Gif[] = [];
 
 export const getCollections = async (): Promise<Collection[]> => (await DataStore.get<Collection[]>(DATA_COLLECTION_NAME)) ?? [];
 
@@ -108,5 +110,13 @@ export const deleteCollection = async (name: string): Promise<void> => {
 
 export const refreshCacheCollection = async (): Promise<void> => {
     cache_collections = await getCollections();
+
+    // this will not work the first time around, but this is good enough to at least get gifs to show up
+    cache_collections.forEach(element => {
+        element.src = GetUpdatedGifCdnUrl(element.src, favorites);
+    });
 };
 
+export function setCmFavorites(newFavorites: Gif[]) {
+    favorites = newFavorites;
+}
