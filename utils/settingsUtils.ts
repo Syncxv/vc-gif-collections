@@ -28,7 +28,9 @@ export async function downloadCollections() {
     const exportData = await exportCollections();
     const data = new TextEncoder().encode(exportData);
 
-    if (IS_WEB) {
+    if (IS_DISCORD_DESKTOP) {
+        DiscordNative.fileManager.saveWithDialog(data, filename);
+    } else {
         const file = new File([data], filename, { type: "application/json" });
         const a = document.createElement("a");
         a.href = URL.createObjectURL(file);
@@ -40,10 +42,7 @@ export async function downloadCollections() {
             URL.revokeObjectURL(a.href);
             document.body.removeChild(a);
         });
-    } else {
-        DiscordNative.fileManager.saveWithDialog(data, filename);
     }
-
 }
 
 export async function exportCollections() {
