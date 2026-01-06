@@ -68,7 +68,25 @@ export async function importCollections(data: string) {
 
 
 export async function uploadGifCollections(showToast = true): Promise<void> {
-    if (IS_WEB) {
+    if (IS_DISCORD_DESKTOP) {
+        const [file] = await DiscordNative.fileManager.openFiles({
+            filters: [
+                { name: "Gif Collections", extensions: ["json"] },
+                { name: "all", extensions: ["*"] }
+            ]
+        });
+
+        if (file) {
+            try {
+                await importCollections(new TextDecoder().decode(file.data));
+                if (showToast) toastSuccess();
+            } catch (err) {
+                console.error(err);
+                // new Logger("SettingsSync").error(err);
+                if (showToast) toastFailure(err);
+            }
+        }
+    } else {
         const input = document.createElement("input");
         input.type = "file";
         input.style.display = "none";
@@ -94,24 +112,6 @@ export async function uploadGifCollections(showToast = true): Promise<void> {
         document.body.appendChild(input);
         input.click();
         setImmediate(() => document.body.removeChild(input));
-    } else {
-        const [file] = await DiscordNative.fileManager.openFiles({
-            filters: [
-                { name: "Gif Collections", extensions: ["json"] },
-                { name: "all", extensions: ["*"] }
-            ]
-        });
-
-        if (file) {
-            try {
-                await importCollections(new TextDecoder().decode(file.data));
-                if (showToast) toastSuccess();
-            } catch (err) {
-                console.error(err);
-                // new Logger("SettingsSync").error(err);
-                if (showToast) toastFailure(err);
-            }
-        }
     }
 }
 
