@@ -17,7 +17,7 @@
 */
 
 import { DataStore } from "@api/index";
-import { Toasts } from "@webpack/common";
+import { showToast } from "@webpack/common";
 
 import { settings } from "./index";
 import { Collection, Gif } from "./types";
@@ -42,14 +42,11 @@ export const createCollection = async (name: string, gifs: Gif[]): Promise<void>
     const collections = await getCollections();
     const duplicateCollection = collections.find(c => c.name === `gc:${name}`);
     if (duplicateCollection)
-        return Toasts.show({
-            message: "That collection already exists",
-            type: Toasts.Type.FAILURE,
-            id: Toasts.genId(),
-            options: {
-                duration: 3000,
-                position: Toasts.Position.BOTTOM
-            }
+        return showToast({
+            text: "That collection already exists",
+            variant: "critical",
+            duration: 3000,
+            position: "bottom"
         });
 
     // gifs shouldnt be empty because to create a collection you need to right click an image / gif and then create it yk. but cant hurt to have a null-conditional check RIGHT?
