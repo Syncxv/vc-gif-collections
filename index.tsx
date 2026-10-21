@@ -30,6 +30,7 @@ import { GIF_COLLECTION_PREFIX, GIF_ITEM_PREFIX } from "./constants";
 import { Category, Collection, Gif, Props } from "./types";
 import { getFormat } from "./utils/getFormat";
 import { getGif } from "./utils/getGif";
+import { GetUpdatedGifCdnUrl, GetUpdatedGifProxyCdnUrl } from "./utils/getUpdatedGifCdnUrl";
 import { downloadCollections, uploadGifCollections } from "./utils/settingsUtils";
 import { uuidv4 } from "./utils/uuidv4";
 
@@ -125,6 +126,12 @@ export default definePlugin({
                     match: /(renderContent\(\){)(.{1,50}resultItems)/,
                     replace: "$1$self.renderContent(this);$2"
                 },
+                {
+                    // to persist filtered favorites when component re-renders.
+                    // when resizing the window the component rerenders and we loose the filtered favorites and have to type in the search bar to get them again
+                    match: /(,suggestions:\i,favorites:)(\i),/,
+                    replace: "$1$self.getFav($2),favCopy:$2,"
+                }
             ]
         },
         /*
@@ -144,7 +151,16 @@ export default definePlugin({
         },
     ],
 
+    getFav(favorites: Gif[]) {
+        // steal this from here, no clue how to do this in a better way because i have literally never made a vencord plugin before lmfao
+        this.favorites = favorites;
+        CollectionManager.setCmFavorites(favorites);
+
+        return favorites;
+    },
+
     settings,
+    favorites: {} as Gif[],
 
 
     start() {
@@ -174,9 +190,9 @@ export default definePlugin({
             if (!collection) return;
             instance.props.resultItems = collection.gifs.map(g => ({
                 id: g.id,
-                format: getFormat(g.src),
-                src: g.src,
-                url: g.url,
+                format: getFormat(GetUpdatedGifCdnUrl(g.src, this.favorites)),
+                src: GetUpdatedGifCdnUrl(g.src, this.favorites),
+                url: GetUpdatedGifProxyCdnUrl(g.url, this.favorites),
                 width: g.width,
                 height: g.height
             })).reverse();

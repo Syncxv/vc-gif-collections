@@ -17,7 +17,11 @@
 */
 
 export const cleanUrl = (url: string) => {
-    const urlObject = new URL(url);
-    urlObject.search = "";
-    return urlObject.href;
+    try {
+        const urlObject = new URL(url);
+        urlObject.search = "";
+        return urlObject.href;
+    } catch {
+        return url;
+    }
 };
