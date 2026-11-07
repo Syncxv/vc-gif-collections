@@ -20,10 +20,13 @@
 
 import { addContextMenuPatch, findGroupChildrenByChildId, NavContextMenuPatchCallback, removeContextMenuPatch } from "@api/ContextMenu";
 import { definePluginSettings } from "@api/Settings";
+import { Button } from "@components/Button";
+import { Heading } from "@components/Heading";
+import { Paragraph } from "@components/Paragraph";
 import { Devs } from "@utils/constants";
 import { ModalContent, ModalFooter, ModalHeader, ModalProps, ModalRoot, openModal } from "@utils/modal";
 import definePlugin, { OptionType } from "@utils/types";
-import { Alerts, Button, ContextMenuApi, FluxDispatcher, Forms, Menu, React, TextInput, useCallback, useState } from "@webpack/common";
+import { Alerts, ContextMenuApi, FluxDispatcher, Menu, React, TextInput, useCallback, useState } from "@webpack/common";
 
 import * as CollectionManager from "./CollectionManager";
 import { GIF_COLLECTION_PREFIX, GIF_ITEM_PREFIX } from "./constants";
@@ -49,8 +52,8 @@ export const settings = definePluginSettings({
                     title: "Are you sure?",
                     body: "Importing collections will overwrite your current collections.",
                     confirmText: "Import",
-                    // wow this works?
-                    confirmColor: Button.Colors.RED,
+                    // @ts-ignore
+                    confirmVariant: "critical-primary",
                     cancelText: "Nevermind",
                     onConfirm: async () => uploadGifCollections()
 
@@ -271,7 +274,8 @@ const RemoveItemContextMenu = ({ type, nameOrId, onConfirm }: { type: "gif" | "c
                     title: "Are you sure?",
                     body: "Do you really want to delete this collection?",
                     confirmText: "Delete",
-                    confirmColor: Button.Colors.RED,
+                    // @ts-ignore
+                    confirmVariant: "critical-primary",
                     cancelText: "Nevermind",
                     onConfirm: async () => {
                         await CollectionManager.deleteCollection(nameOrId);
@@ -341,17 +345,17 @@ function CreateCollectionModal({ gif, onClose, modalProps }: CreateCollectionMod
         <ModalRoot {...modalProps}>
             <form onSubmit={onSubmit}>
                 <ModalHeader>
-                    <Forms.FormText>Create Collection</Forms.FormText>
+                    <Paragraph>Create Collection</Paragraph>
                 </ModalHeader>
                 <ModalContent>
-                    <Forms.FormTitle tag="h5" style={{ marginTop: "10px" }}>Collection Name</Forms.FormTitle>
+                    <Heading tag="h5" style={{ marginTop: "10px" }}>Collection Name</Heading>
                     <TextInput onChange={(e: string) => setName(e)} />
                 </ModalContent>
                 <div style={{ marginTop: "1rem" }}>
                     <ModalFooter>
                         <Button
                             type="submit"
-                            color={Button.Colors.GREEN}
+                            variant="positive"
                             disabled={!name.length}
                             onClick={onSubmit}
                         >
